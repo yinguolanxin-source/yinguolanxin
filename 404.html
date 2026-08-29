@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<meta name="description" content="蓝志华 · 个人简历 · 页面未找到">
+<title>404 · 页面未找到 · 蓝志华</title>
+<style>
+/* 设计令牌：与主站（index.html）一致的黑灰主调 + 金色渐变 accent */
+:root{
+  --bg:#08080b;
+  --text:#f0f0f4;
+  --soft:#a8a8b3;
+  --mute:#6e6e7a;
+  --border:#34343f;
+  --accent:#e0a84e;
+  --accent-2:#c97b3a;
+  --grad:linear-gradient(135deg,var(--accent),var(--accent-2));
+  --ease:cubic-bezier(.4,0,.2,1);
+  --dur:220ms;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;display:flex;flex-direction:column;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB","Helvetica Neue",Arial,sans-serif;
+  color:var(--text);line-height:1.75;
+  background:
+    radial-gradient(1100px 560px at 75% -12%,rgba(224,168,78,.09),transparent 62%),
+    radial-gradient(900px 480px at 10% 110%,rgba(201,123,58,.06),transparent 60%),
+    var(--bg);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+
+/* 星点层：纯 CSS 静态星点，轻微呼吸闪烁 */
+.stars{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 22%,rgba(240,240,244,.55) 50%,transparent 51%),
+    radial-gradient(1px 1px at 28% 64%,rgba(240,240,244,.35) 50%,transparent 51%),
+    radial-gradient(2px 2px at 41% 18%,rgba(240,240,244,.4) 50%,transparent 51%),
+    radial-gradient(1px 1px at 57% 78%,rgba(240,240,244,.3) 50%,transparent 51%),
+    radial-gradient(1.5px 1.5px at 68% 34%,rgba(240,240,244,.5) 50%,transparent 51%),
+    radial-gradient(1px 1px at 79% 58%,rgba(240,240,244,.35) 50%,transparent 51%),
+    radial-gradient(2px 2px at 88% 14%,rgba(240,240,244,.45) 50%,transparent 51%),
+    radial-gradient(1px 1px at 8% 84%,rgba(240,240,244,.3) 50%,transparent 51%),
+    radial-gradient(1.5px 1.5px at 34% 44%,rgba(240,240,244,.25) 50%,transparent 51%),
+    radial-gradient(1px 1px at 93% 72%,rgba(240,240,244,.35) 50%,transparent 51%);
+  animation:twinkle 5s ease-in-out infinite alternate;
+}
+@keyframes twinkle{from{opacity:.5}to{opacity:1}}
+
+/* 顶部品牌角标：与主站导航品牌同款 */
+.brand{
+  position:relative;z-index:1;display:flex;align-items:center;gap:11px;
+  font-weight:700;padding:26px 4vw 0;
+}
+.brand .logo{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  background:var(--grad);color:#0a0a0a;font-weight:800;font-size:15px;flex:none;
+}
+.brand .bname{font-size:15px}
+.brand .bname small{display:block;font-size:10px;color:var(--mute);font-weight:500;letter-spacing:1px}
+
+/* 主体：居中 404 */
+.wrap{
+  position:relative;z-index:1;flex:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px 6vw 56px;
+}
+.code{
+  font-size:clamp(110px,26vw,210px);font-weight:800;line-height:1;letter-spacing:-.04em;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  filter:drop-shadow(0 24px 38px rgba(0,0,0,.55));
+}
+/* 中文副标题：与主站 .section-head .zh 同款（小字号 · 宽字距 · 弱灰） */
+.zh{font-size:13px;letter-spacing:8px;color:var(--mute);font-weight:500;margin-top:20px}
+.msg{font-size:14px;color:var(--soft);margin-top:14px;max-width:34em}
+.btn{
+  margin-top:32px;display:inline-flex;align-items:center;gap:9px;
+  padding:11px 28px;border-radius:999px;border:1px solid var(--border);
+  background:rgba(224,168,78,.07);color:var(--accent);
+  font-weight:600;font-size:14px;letter-spacing:2px;
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease),background var(--dur) var(--ease);
+}
+.btn:hover{transform:translateY(-2px);border-color:var(--accent);background:rgba(224,168,78,.13);box-shadow:0 14px 34px rgba(0,0,0,.5)}
+.btn svg{width:15px;height:15px}
+.count{font-size:12px;color:var(--mute);margin-top:22px;letter-spacing:1px}
+.count b{color:var(--accent);font-weight:700}
+
+/* 页脚提示：解释尾点陷阱（本页存在的初衷） */
+.tip{position:relative;z-index:1;text-align:center;font-size:12px;color:var(--mute);padding:0 6vw 28px}
+.tip b{color:var(--soft);font-weight:600}
+
+/* 入场动画：一次性错峰上浮 */
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.brand,.wrap>*,.tip{animation:rise .7s var(--ease) both}
+.wrap .code{animation-delay:.06s}
+.wrap .zh{animation-delay:.14s}
+.wrap .msg{animation-delay:.22s}
+.wrap .btn{animation-delay:.3s}
+.wrap .count{animation-delay:.38s}
+.tip{animation-delay:.46s}
+@media(prefers-reduced-motion:reduce){
+  .stars,.brand,.wrap>*,.tip{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="stars" aria-hidden="true"></div>
+
+<header class="brand">
+  <span class="logo">蓝</span>
+  <span class="bname">蓝志华<small>PERSONAL RESUME</small></span>
+</header>
+
+<main class="wrap">
+  <div class="code">404</div>
+  <h1 class="zh" id="title">正在校准路径</h1>
+  <p class="msg" id="msg">检测到链接缺少尾点，正在带你前往正确地址…</p>
+  <a class="btn" id="home" href="https://yinguolanxin-source.github.io/yinguolanxin./">
+    返回首页
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </a>
+  <p class="count" id="count" hidden><b id="num">3</b> 秒后自动返回首页</p>
+</main>
+
+<p class="tip">提示：本站网址以 <b>yinguolanxin.</b> 结尾（含尾部句点），部分聊天工具会裁去 URL 尾点，导致访问失效</p>
+
+<script>
+(function(){
+  var ORIGIN='https://yinguolanxin-source.github.io';
+  var HOME=ORIGIN+'/yinguolanxin./';
+  var elTitle=document.getElementById('title');
+  var elMsg=document.getElementById('msg');
+  var elCount=document.getElementById('count');
+  var elNum=document.getElementById('num');
+  var btn=document.getElementById('home');
+  var timer=null;
+
+  var path=location.pathname;
+  try{path=decodeURIComponent(path);}catch(e){}
+
+  /* 站内真实 404：显示提示页，3 秒倒计时后自动返回首页 */
+  function show404(){
+    elTitle.textContent='页面未找到';
+    elMsg.textContent='你要访问的页面不存在，或已被移动。';
+    elCount.hidden=false;
+    var n=3;
+    elNum.textContent=n;
+    timer=setInterval(function(){
+      n--;
+      if(n<=0){clearInterval(timer);timer=null;location.replace(HOME);return;}
+      elNum.textContent=n;
+    },1000);
+  }
+  /* 手动点击返回按钮时取消自动跳转 */
+  btn.addEventListener('click',function(){
+    if(timer){clearInterval(timer);timer=null;}
+  });
+
+  /* 情况二/三：路径已以带点仓库段 /yinguolanxin. 开头（点后为 / 或结尾）
+     （如 /yinguolanxin./、/yinguolanxin./some-broken-page）→ 站内真实不存在页，走 404 提示 */
+  if(/^\/yinguolanxin\.(\/|$)/i.test(path)){show404();return;}
+
+  /* 情况一：仓库段缺尾点（/yinguolanxin、/yinguolanxin/…）或点数异常（/yinguolanxin.. 等）变体
+     → 规范化为 /yinguolanxin./，并原样保留其后的子路径、查询串（search）与锚点（hash） */
+  var m=path.match(/^\/yinguolanxin\.*(?=\/|$)/i);
+  if(m){
+    var rest=path.slice(m[0].length);
+    var target=ORIGIN+'/yinguolanxin.'+(rest||'/')+location.search+location.hash;
+    elTitle.textContent='正在校准路径';
+    elMsg.textContent='检测到链接缺少尾点，正在带你前往正确地址…';
+    location.replace(target);
+    return;
+  }
+
+  /* 其余与本仓库无关的任意未知路径：同样给出 404 提示并送回首页 */
+  show404();
+})();
+</script>
+</body>
+</html>
