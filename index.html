@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="蓝志华 · 个人简历" />
+<title>蓝志华 · 个人简历</title>
+<style>
+/* ============================================================
+   设计令牌（黑灰主调 + 滚动变色 accent）
+   --accent / --accent-2 由 JS 随滚动更新色相，实现渐变视差
+   ============================================================ */
+:root{
+  --bg:#08080b;            /* 主背景：近黑 */
+  --bg-2:#0e0e13;          /* 次背景 */
+  --surface:#121218;       /* 卡片表面 */
+  --surface-2:#16161e;     /* 卡片次表面 */
+  --border:#26262f;        /* 边框：深灰 */
+  --border-2:#34343f;
+  --text:#f0f0f4;          /* 主文本 */
+  --text-soft:#a8a8b3;     /* 次文本 */
+  --text-mute:#6e6e7a;     /* 弱文本 */
+  --accent:#e0a84e;        /* 主强调色（滚动时动态变化） */
+  --accent-2:#c97b3a;      /* 辅强调色（滚动时动态变化） */
+  --accent-rgb:224,168,78;
+  --grad:linear-gradient(135deg,var(--accent),var(--accent-2));
+  --grad-soft:linear-gradient(135deg,rgba(var(--accent-rgb),.14),rgba(var(--accent-rgb),.04));
+  --shadow-sm:0 1px 2px rgba(0,0,0,.5);
+  --shadow-md:0 12px 30px rgba(0,0,0,.45);
+  --shadow-lg:0 30px 70px rgba(0,0,0,.6);
+  --radius:16px;
+  --radius-sm:10px;
+  --radius-lg:24px;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --dur:220ms;
+  --font-kai:'STXingkai','华文行楷','STKaiti','KaiTi','楷体','SimSun',serif;
+}
+
+/* ============================================================
+   基础重置
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Hiragino Sans GB","Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+  transition:background var(--dur) var(--ease);
+}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.container{width:min(1180px,92%);margin:0 auto;position:relative}
+
+/* ============================================================
+   星河背景（WebGL 着色器全屏 Canvas，作为整页背景）
+   ============================================================ */
+#galaxy{position:fixed;inset:0;width:100%;height:100%;z-index:-3;display:block;pointer-events:none}
+
+/* ============================================================
+   导航（固定顶部，毛玻璃）
+   ============================================================ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  backdrop-filter:saturate(160%) blur(16px);
+  -webkit-backdrop-filter:saturate(160%) blur(16px);
+  background:rgba(8,8,11,.6);
+  border-bottom:1px solid transparent;
+  transition:border-color var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
+}
+.nav.scrolled{border-color:var(--border);box-shadow:var(--shadow-sm)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:62px;gap:14px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:700}
+.brand .logo{
+  width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  background:var(--grad);color:#0a0a0a;font-weight:800;font-size:15px;
+}
+.brand .name{font-size:15px}
+.brand .name small{display:block;font-size:10px;color:var(--text-mute);font-weight:500;letter-spacing:1px}
+.nav-menu{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.nav-link{
+  padding:7px 11px;border-radius:8px;font-size:12px;letter-spacing:.5px;
+  color:var(--text-soft);text-transform:uppercase;font-weight:600;
+  transition:color var(--dur) var(--ease),background var(--dur) var(--ease);
+}
+.nav-link:hover{color:var(--accent);background:rgba(255,255,255,.04)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.icon-btn{
+  width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
+  border:1px solid var(--border);background:var(--surface);color:var(--text-soft);
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),color var(--dur) var(--ease),border-color var(--dur) var(--ease);
+  position:relative;overflow:hidden;
+}
+.icon-btn:hover{color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-sm);border-color:var(--accent)}
+.icon-btn svg{width:17px;height:17px}
+.burger{display:none}
+
+/* ============================================================
+   Hero 区（居中姓名 · 上下黑白分色 · 倾斜分界 · 半透明 · 悬浮星河）
+   ============================================================ */
+.hero{min-height:80vh;display:flex;align-items:center;justify-content:center;position:relative;padding:120px 0 0}
+.hero-stage{position:relative;width:min(94%,1280px);margin:0 auto;text-align:center;z-index:2}
+/* 眉标 */
+.hero-eyebrow{
+  font-size:12px;letter-spacing:6px;text-transform:uppercase;color:var(--text-soft);
+  font-weight:600;margin:26px 0 0;position:relative;display:inline-block;
+}
+.hero-eyebrow::before,.hero-eyebrow::after{content:"";position:absolute;top:50%;width:40px;height:1px;background:var(--grad)}
+.hero-eyebrow::before{right:calc(100% + 18px)}
+.hero-eyebrow::after{left:calc(100% + 18px)}
+/* 姓名：DepthText 立体堆叠（faceColor 白 → depthColor 黑，相反黑白深度） */
+.name-plate{position:relative;display:block;width:fit-content;margin:0 auto;padding:0 .14em;z-index:2}
+.hero-name{font-size:clamp(96px,20vw,260px);font-weight:800;letter-spacing:-4px;line-height:1}
+.depth-text{display:inline-block;perspective:var(--depth-text-perspective,900px);perspective-origin:50% 50%;position:relative}
+.depth-text__stage{position:relative;display:inline-block;transform-style:preserve-3d;will-change:transform}
+.depth-text__layer{position:absolute;top:0;left:0;display:inline-block;white-space:nowrap;pointer-events:none}
+.depth-text__face{position:relative;display:inline-block;white-space:nowrap;background:linear-gradient(185deg, var(--depth-text-face-color,#f8fafc) 49%, var(--depth-text-depth-color,#0a0a0e) 51%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;text-shadow:0 22px 34px color-mix(in srgb,var(--depth-text-depth-color,#0a0a0e) 36%,transparent),0 4px 8px rgba(0,0,0,.28)}
+/* ShinyText 扫光：伪元素叠加，底色（黑白分色）保留，紫色高光带(#be00ff)从右向左扫过，3s 周期 */
+.depth-text__face::after{content:attr(data-text);position:absolute;left:0;top:0;display:inline-block;white-space:nowrap;background-image:linear-gradient(120deg, transparent 0%, transparent 35%, rgba(190,0,255,.95) 50%, transparent 65%, transparent 100%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;pointer-events:none;animation:shiny-sweep 3s linear infinite;will-change:background-position}
+@keyframes shiny-sweep{0%{background-position:150% center}100%{background-position:-50% center}}
+@media(prefers-reduced-motion:reduce){.depth-text__face::after{animation:none}}
+.hero-title-line{font-size:clamp(15px,2.2vw,19px);color:var(--text-soft);margin-top:24px;font-weight:500}
+.hero-loc{font-size:13px;color:var(--text-mute);margin-top:10px;display:flex;justify-content:center;align-items:center;gap:8px}
+.hero-loc .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* ============================================================
+   通用板块
+   ============================================================ */
+section.block{padding:80px 0;position:relative}
+.section-head{margin-bottom:42px;text-align:center;position:relative}
+.section-head .en{
+  font-size:clamp(34px,5vw,52px);font-weight:800;letter-spacing:-.5px;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.section-head .zh{font-size:13px;letter-spacing:8px;color:var(--text-mute);margin-top:8px;font-weight:500}
+.section-head .rule{width:60px;height:2px;background:var(--grad);margin:18px auto 0;border-radius:2px}
+
+/* ============================================================
+   Profile 基本信息
+   ============================================================ */
+.profile-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.info-card{
+  border-radius:var(--radius);padding:22px;background:var(--surface);
+  border:1px solid var(--border);display:flex;align-items:center;gap:14px;
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease);
+  position:relative;overflow:hidden;
+}
+.info-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--accent)}
+.info-card .ic{width:42px;height:42px;border-radius:12px;background:var(--grad-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.info-card .ic svg{width:19px;height:19px}
+.info-card .il .k{font-size:11px;letter-spacing:1.5px;color:var(--text-mute);text-transform:uppercase;font-weight:600}
+.info-card .il .v{font-size:15px;font-weight:600;margin-top:2px;word-break:break-all}
+.info-card .copy{margin-left:auto;font-size:11px;color:var(--accent);padding:4px 9px;border-radius:6px;border:1px solid var(--border);flex:none;transition:background var(--dur) var(--ease)}
+.info-card .copy:hover{background:rgba(255,255,255,.05)}
+
+/* ============================================================
+   Education 教育背景
+   ============================================================ */
+.edu-card{
+  border-radius:var(--radius-lg);padding:30px;background:var(--surface);
+  border:1px solid var(--border);position:relative;overflow:hidden;
+}
+.edu-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.edu-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.edu-head .badge{width:48px;height:48px;border-radius:14px;background:var(--grad-soft);color:var(--accent);display:grid;place-items:center;flex:none}
+.edu-head .badge svg{width:22px;height:22px}
+.edu-school{font-size:22px;font-weight:800}
+.edu-meta{color:var(--text-soft);font-size:14px;margin-top:3px}
+.edu-period{margin-left:auto;font-size:12px;color:var(--accent);background:var(--grad-soft);padding:5px 12px;border-radius:999px;font-weight:600;border:1px solid var(--border)}
+.edu-courses{margin-top:20px;display:flex;flex-wrap:wrap;gap:8px}
+.edu-courses .c{font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-soft)}
+
+/* ============================================================
+   Skills 专业技能（进度条 + 徽章，全展开）
+   ============================================================ */
+.skill-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.skill-card{
+  border-radius:var(--radius);padding:24px;background:var(--surface);
+  border:1px solid var(--border);transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
+  position:relative;overflow:hidden;
+}
+.skill-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.skill-card h3{font-size:15px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.skill-card h3 .si{width:30px;height:30px;border-radius:9px;background:var(--grad-soft);color:var(--accent);display:grid;place-items:center}
+.skill-card h3 .si svg{width:16px;height:16px}
+.bar{margin-bottom:13px}.bar:last-child{margin-bottom:0}
+.bar .top{display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px}
+.bar .top .pct{color:var(--text-mute)}
+.bar .track{height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;border:1px solid var(--border)}
+.bar .fill{height:100%;border-radius:999px;background:var(--grad);width:0;transition:width 1.1s var(--ease)}
+.skill-badges{display:flex;flex-wrap:wrap;gap:8px}
+.tag{
+  display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;
+  font-size:12px;font-weight:600;background:var(--grad-soft);
+  border:1px solid var(--border);color:var(--text);
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
+}
+.tag:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.tag .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* ============================================================
+   Internship 实习履历（时间线）
+   ============================================================ */
+.timeline{position:relative;padding-left:28px;max-width:880px;margin:0 auto}
+.timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--grad);border-radius:2px}
+.tl-item{position:relative;padding:0 0 30px;margin-left:6px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:"";position:absolute;left:-28px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--bg);border:3px solid var(--accent);box-shadow:var(--shadow-sm)}
+.tl-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+.tl-head .org{font-size:17px;font-weight:700}
+.tl-head .role{color:var(--accent);font-size:13px;font-weight:600}
+.tl-head .period{font-size:12px;color:var(--text-mute);background:var(--surface);padding:3px 10px;border-radius:999px;border:1px solid var(--border)}
+.tl-list{margin-top:10px;display:grid;gap:6px}
+.tl-list li{position:relative;padding-left:18px;color:var(--text-soft);font-size:14px}
+.tl-list li::before{content:"";position:absolute;left:0;top:10px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+/* ============================================================
+   Projects 项目经历（卡片全展开，无 Tab）
+   ============================================================ */
+.proj-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.proj{
+  position:relative;border-radius:var(--radius);padding:24px;background:var(--surface);
+  border:1px solid var(--border);display:flex;flex-direction:column;gap:12px;overflow:hidden;
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease);
+}
+.proj::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform .3s var(--ease)}
+.proj:hover{transform:translateY(-5px);box-shadow:var(--shadow-md);border-color:transparent}
+.proj:hover::after{transform:scaleX(1)}
+.proj-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.proj-name{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.proj-name .pin{width:9px;height:9px;border-radius:3px;background:var(--grad)}
+.proj-period{font-size:11px;color:var(--text-mute);white-space:nowrap}
+.proj-role{font-size:12px;color:var(--accent);font-weight:600}
+.proj-desc{color:var(--text-soft);font-size:13.5px}
+.proj-result{color:var(--text);font-size:13.5px}
+.proj-result b{color:var(--accent)}
+.proj-tech{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:7px;background:var(--surface-2);color:var(--text-soft);border:1px solid var(--border)}
+
+/* ============================================================
+   Certificates 获奖证书
+   ============================================================ */
+.cert-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.cert{flex:0 1 320px;max-width:100%}
+.cert{
+  display:flex;gap:13px;align-items:center;padding:15px 16px;border-radius:var(--radius-sm);
+  background:var(--surface);border:1px solid var(--border);
+  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),border-color var(--dur) var(--ease);
+  position:relative;overflow:hidden;
+}
+.cert:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:var(--accent)}
+.cert .ci{width:38px;height:38px;border-radius:11px;background:var(--grad);color:#0a0a0a;display:grid;place-items:center;flex:none}
+.cert .ci svg{width:18px;height:18px}
+.cert .ct{font-size:13px;font-weight:600;line-height:1.4}
+.cert .cb{font-size:11px;color:var(--text-mute);margin-top:2px}
+
+/* ============================================================
+   Traits 个人特质 / Acknowledgements 特别鸣谢
+   ============================================================ */
+.note{
+  border-radius:var(--radius-lg);padding:32px;background:var(--surface);
+  border:1px solid var(--border);position:relative;overflow:hidden;
+}
+.note::before{content:"";position:absolute;inset:0;background:var(--grad-soft);opacity:.6;pointer-events:none}
+.note p{position:relative;color:var(--text-soft);font-size:15.5px;line-height:1.9}
+.note .quote{position:absolute;top:8px;right:20px;font-size:90px;line-height:1;color:var(--accent);opacity:.2;font-family:var(--font-kai)}
+.hobby-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;position:relative}
+.hobby{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text-soft)}
+.hobby svg{width:15px;height:15px;color:var(--accent)}
+.thanks-list{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;position:relative}
+.thanks-list .t{padding:6px 14px;border-radius:999px;background:var(--grad);color:#0a0a0a;font-weight:700;font-size:13px}
+
+/* ============================================================
+   ChromaGrid 色度网格（容器光斑跟随鼠标 + 卡片聚光灯）
+   - .chroma 容器：紫色径向光斑跟随鼠标（--x/--y），离开渐隐
+   - .chroma-spot 卡片聚光灯：卡片内鼠标位置高光（--mx/--my）
+   - mix-blend-mode:screen 叠加发光，不遮挡内容
+   ============================================================ */
+.chroma{position:relative;--x:50%;--y:50%;--r:340px;isolation:isolate}
+.chroma-glow{
+  position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:50;
+  background:radial-gradient(var(--r) circle at var(--x) var(--y), rgba(190,0,255,.14), transparent 65%);
+  opacity:0;transition:opacity .55s var(--ease);mix-blend-mode:screen;
+}
+.chroma.chroma-on .chroma-glow{opacity:1}
+.chroma-spot{
+  position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:radial-gradient(180px circle at var(--mx,50%) var(--my,50%), rgba(190,0,255,.16), transparent 60%);
+  opacity:0;transition:opacity .35s var(--ease);mix-blend-mode:screen;
+}
+.info-card:hover .chroma-spot,.skill-card:hover .chroma-spot,.proj:hover .chroma-spot,.cert:hover .chroma-spot,.tl-item:hover .chroma-spot,.edu-card:hover .chroma-spot,.note:hover .chroma-spot{opacity:1}
+
+/* ============================================================
+   CircularGallery 环形画廊（CSS preserve-3d 移植 OGL 版）
+   - 图片沿圆环排列，容器 rotateY 旋转（自动巡航 + 拖动）
+   - lerp 平滑、惯性减速、鼠标拖动
+   ============================================================ */
+.gallery-stage{
+  perspective:1500px;height:440px;display:flex;align-items:center;justify-content:center;
+  overflow:visible;margin:36px 0 10px;cursor:grab;touch-action:none;
+}
+.gallery-stage:active{cursor:grabbing}
+.gallery-ring{position:relative;width:200px;height:280px;transform-style:preserve-3d;will-change:transform}
+.gallery-item{
+  position:absolute;inset:0;border-radius:14px;overflow:hidden;backface-visibility:hidden;
+  box-shadow:0 20px 40px rgba(0,0,0,.45);background:var(--surface);border:1px solid var(--border);
+  transition:box-shadow .35s var(--ease);
+}
+.gallery-item:hover{box-shadow:0 26px 50px rgba(190,0,255,.35)}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-item .cap{
+  position:absolute;left:0;right:0;bottom:0;
+  background:linear-gradient(transparent,rgba(0,0,0,.85));
+  color:#fff;font-size:12px;padding:22px 12px 12px;text-align:center;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.gallery-hint{text-align:center;color:var(--text-mute);font-size:12px;margin-top:6px}
+@media(max-width:640px){
+  .gallery-stage{height:380px}
+  .gallery-ring{width:160px;height:220px}
+}
+
+/* ============================================================
+   页脚 + 返回顶部
+   ============================================================ */
+.footer{border-top:1px solid var(--border);padding:32px 0;margin-top:30px;text-align:center}
+.footer p{font-size:12px;color:var(--text-mute);line-height:1.8}
+.footer p b{color:var(--accent)}
+.to-top{
+  position:fixed;right:18px;bottom:18px;width:44px;height:44px;border-radius:13px;
+  background:var(--grad);color:#0a0a0a;display:grid;place-items:center;z-index:40;
+  box-shadow:var(--shadow-lg);opacity:0;transform:translateY(14px) scale(.9);pointer-events:none;
+  transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease);overflow:hidden;
+}
+.to-top.show{opacity:1;transform:none;pointer-events:auto}
+.to-top:hover{transform:translateY(-2px)}
+.to-top svg{width:19px;height:19px}
+
+/* 点击涟漪 */
+.ripple-wave{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);transform:scale(0);animation:rip .6s var(--ease);pointer-events:none}
+@keyframes rip{to{transform:scale(2.2);opacity:0}}
+
+/* Toast */
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--surface);color:var(--text);padding:10px 18px;border-radius:11px;font-size:13px;font-weight:600;
+  border:1px solid var(--border);box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;z-index:80;
+  transition:opacity var(--dur) var(--ease),transform var(--dur) var(--ease);
+}
+
+/* 背景音乐按钮（固定右下角，毛玻璃） */
+.bgm-btn{
+  position:fixed;right:18px;bottom:18px;z-index:55;width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(18,18,24,.72);
+  backdrop-filter:saturate(160%) blur(12px);-webkit-backdrop-filter:saturate(160%) blur(12px);
+  border:1px solid var(--border);color:var(--text-soft);font-size:18px;cursor:pointer;
+  transition:color var(--dur) var(--ease),border-color var(--dur) var(--ease),transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);
+  box-shadow:var(--shadow-sm);
+}
+.bgm-btn:hover{color:var(--accent);border-color:var(--accent);transform:scale(1.08)}
+.bgm-btn.on{color:var(--accent);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 20px rgba(var(--accent-rgb),.25)}
+.bgm-btn.on .bgm-ico{animation:bgmPulse 1.6s ease-in-out infinite}
+.bgm-btn.loading{color:var(--accent);border-color:var(--border-2)}
+.bgm-btn.loading .bgm-ico{animation:bgmSpin 1s linear infinite}
+.bgm-btn.err{opacity:.4;cursor:not-allowed}
+.bgm-btn.err:hover{transform:none;color:var(--text-soft);border-color:var(--border)}
+@keyframes bgmPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+@keyframes bgmSpin{to{transform:rotate(360deg)}}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* 进入动画 */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .65s var(--ease),transform .65s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+/* SplitText 逐字滚动进入（移植自 React SplitText，无外部依赖） */
+.rb-char{display:inline-block;will-change:transform,opacity}
+.rb-pre .rb-char{opacity:0;transform:translateY(40px)}
+.rb-pre.rb-in .rb-char{opacity:1;transform:translateY(0);transition:opacity 1.25s cubic-bezier(.22,1,.36,1),transform 1.25s cubic-bezier(.22,1,.36,1);transition-delay:calc(var(--rb-i,0)*50ms)}
+@media(prefers-reduced-motion:reduce){
+  .rb-pre .rb-char{opacity:1;transform:none;transition:none}
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media(max-width:860px){
+  .profile-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+  .nav-menu{
+    display:none;position:absolute;top:62px;left:0;right:0;flex-direction:column;align-items:stretch;
+    padding:10px;gap:2px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow-md);
+  }
+  .nav-menu.open{display:flex}
+  .nav-link{padding:11px 12px}
+  .burger{display:inline-flex}
+  section.block{padding:54px 0}
+  .profile-grid,.skill-grid,.proj-grid{grid-template-columns:1fr}
+  .cal-group{font-size:clamp(26px,9vw,56px);opacity:.2}
+  .edu-period{margin-left:0;margin-top:8px}
+}
+@media(max-width:480px){
+  .hero{padding-top:100px}
+  .info-card{flex-wrap:wrap}
+  .info-card .copy{margin-left:0}
+}
+
+/* ============================================================
+   打印样式
+   ============================================================ */
+@media print{
+  :root{--bg:#fff;--surface:#fff;--surface-2:#f5f5f5;--border:#ccc;--text:#000;--text-soft:#333;--text-mute:#666;--accent:#9a6b1f;--accent-2:#7a4a1a;--accent-rgb:154,107,31}
+  #galaxy,.nav,.to-top,.toast{display:none!important}
+  section.block{padding:14px 0}
+  .container{width:100%}
+  .proj,.skill-card,.cert,.info-card,.edu-card,.note{box-shadow:none;break-inside:avoid}
+  .reveal{opacity:1;transform:none}
+  .hero{min-height:auto;padding:30px 0}
+  .hero-name,.section-head .en{color:var(--accent);-webkit-text-fill-color:var(--accent)}
+  a[href]:after{content:" (" attr(href) ")";font-size:9px;color:#666}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 星河背景（WebGL 着色器） ===== -->
+<canvas id="galaxy" aria-hidden="true"></canvas>
+
+<!-- ===== 背景音乐 ===== -->
+<audio id="bgm" src="bgm.mp3" loop preload="none"></audio>
+<button id="bgmToggle" class="bgm-btn" aria-label="播放背景音乐" title="背景音乐">
+  <span class="bgm-ico" aria-hidden="true">♪</span>
+</button>
+
+<!-- ===== 导航 ===== -->
+<nav class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="#hero" class="brand">
+      <span class="logo">蓝</span>
+      <span class="name">蓝志华<small>LAN ZHIHUA</small></span>
+    </a>
+    <ul class="nav-menu" id="navMenu">
+      <li><a class="nav-link" href="#profile">Profile</a></li>
+      <li><a class="nav-link" href="#education">Education</a></li>
+      <li><a class="nav-link" href="#skills">Skills</a></li>
+      <li><a class="nav-link" href="#internship">Internship</a></li>
+      <li><a class="nav-link" href="#projects">Projects</a></li>
+      <li><a class="nav-link" href="#certificates">Certificates</a></li>
+      <li><a class="nav-link" href="#traits">Traits</a></li>
+      <li><a class="nav-link" href="#thanks">Thanks</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="icon-btn" id="printBtn" title="打印 / 导出 PDF" aria-label="打印"></button>
+      <button class="icon-btn burger" id="burger" aria-label="菜单" aria-expanded="false"></button>
+    </div>
+  </div>
+</nav>
+
+<main id="app"></main>
+
+<!-- ===== 返回顶部 / 提示 ===== -->
+<a href="#hero" class="to-top" id="toTop" aria-label="返回顶部"></a>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   简历数据（所有板块内容由此驱动渲染）
+   ============================================================ */
+const resume = {
+  name:"蓝志华",
+  pinyin:"LAN ZHIHUA",
+  gender:"男",
+  title:"汽车智能技术 · AI 应用开发 / 独立开发者",
+  location:"广东深圳",
+  phone:"19865932063",
+  emailUser:"Lzhihua20222022",   // 邮箱拆分，运行时拼接，防爬虫
+  emailDomain:"163.com",
+  wechat:"L19865932063",
+  // 八字行书（昭学 励志 勤朴 登攀）
+  motto:["昭","学","励","志","勤","朴","登","攀"],
+  // 基本信息
+  profile:[
+    {k:"性别",v:"男",icon:"user"},
+    {k:"所在地",v:"广东深圳",icon:"pin"},
+    {k:"电话",v:"19865932063",icon:"phone",copy:true},
+    {k:"邮箱",v:"mail",icon:"mail",copy:true},
+    {k:"微信",v:"L19865932063",icon:"wechat",copy:true},
+    {k:"学历",v:"专科",icon:"cap"}
+  ],
+  // 教育背景
+  education:{
+    school:"深圳城市职业学院",
+    major:"汽车智能技术专业",
+    degree:"专科（在读）",
+    period:"2026.09 – 2029.07",
+    courses:["智能汽车构造","汽车电子控制技术","Python 编程","PLC 控制技术","人工智能基础"]
+  },
+  // 专业技能（全部展开）
+  skills:[
+    {title:"编程与嵌入式开发",icon:"code",badges:["Python","PLC 编程","自动化控制","树莓派","嵌入式开发"]},
+    {title:"数据分析与可视化",icon:"chart",badges:["数据采集","数据清洗","AI 辅助分析","可视化呈现"]},
+    {title:"工具与应用",icon:"tool",badges:["Gamma 演示文稿","剪映专业版","视频剪辑","后期制作"]},
+    {title:"硬件 DIY 与动手实践",icon:"chip",badges:["PC 组装(ITX)","暴力风扇改造","树莓派项目","从零搭建"]}
+  ],
+  // 实习履历
+  internships:[
+    {
+      org:"深圳新桃园酒店",role:"社会实践",period:"2023.09 – 2024.01",
+      points:[
+        "在酒店运营一线完成四个月全职社会实践，深入参与前厅接待、客户服务工作，在高强度服务场景中累计服务客户 1000+ 人次。",
+        "协助同事优化宾客入住接待流程，主动观察客户需求并提供个性化服务建议，协助将客户满意度评分提升约 12%。",
+        "主动承担跨部门信息传达与反馈汇总工作，积累了对服务行业运营节奏的深度理解，显著提升社会经验与服务客户意识。"
+      ]
+    }
+  ],
+  // 项目经历（全部展开，无 Tab）
+  projects:[
+    {name:"个人简历网站部署",role:"独立开发者",period:"2026.08",
+     tech:["DeepSeek","前端开发","响应式布局","Github"],
+     desc:"基于 DeepSeek 构建个人简历网页内容，完成前端页面设计与响应式布局适配，并部署至 Github 平台实现公网访问。",
+     result:"通过简历页面的社交分享与传播，微信好友主动添加量增加 5 人，有效拓展了社交网络。"},
+    {name:"回龙村气象数据自动监测系统",role:"独立开发者",period:"2026.06",
+     tech:["Python","伏羲 API","定时任务","异常预警"],
+     desc:"独立设计并开发气象数据自动监测程序，通过调用伏羲 API 实现天气数据定时拉取与异常预警推送。",
+     result:"针对局部小气候特点优化数据采样频率与参数校准，使局部天气预测精准性较通用方案提升约 30%，为农业生产与村民出行提供决策参考。"},
+    {name:"OpenClaw 新闻聚合推送系统",role:"独立开发者",period:"2026.05",
+     tech:["扣子","RSS","飞书机器人","工作流"],
+     desc:"在扣子平台搭建资讯抓取自动化工作流，配置多源新闻 RSS 订阅与内容过滤规则。",
+     result:"实现每日热点新闻自动整合并推送到飞书群组，日均推送信息 20+ 条，节省每日信息筛选时间约 20 分钟。"},
+    {name:"个人知识沉淀库搭建",role:"独立开发者",period:"2026.04",
+     tech:["Ima","WorkBuddy","知识图谱","标签体系","Obsidian"],
+     desc:"基于 Ima + WorkBuddy 搭建个人知识管理体系，构建分类标签体系与知识图谱框架，完成零散学习资料的归集与结构化整理。尝试用 Obsidian 搭建大学知识库，并使用 AI 插件提升知识整理效率。",
+     result:"沉淀技术笔记、项目复盘、学习心得等各类知识条目 200+ 项，实现知识的可检索、可复用与可迭代，有效提升个人学习效率与知识转化率。"}
+  ],
+  // 获奖证书
+  certificates:[
+    {title:"人工智能训练师（初级 / 高级）",by:"阿里达摩院"},
+    {title:"智能体工程师认证",by:"科大讯飞"},
+    {title:"微调工程师认证",by:"科大讯飞"},
+    {title:"RAG 工程师认证",by:"科大讯飞"},
+    {title:"生成式 AI 资深认证工程师",by:"百度智能云"},
+    {title:"大模型开发工程师",by:"Datawhale"},
+    {title:"AI + 数据分析能力认证",by:"Datawhale"},
+    {title:"Fine-tuning Engineer",by:"Datawhale"},
+    {title:"Agent Engineer",by:"Datawhale"},
+    {title:"智能体工程师认证",by:"AI 大学堂"},
+    {title:"微调工程师认证",by:"AI 大学堂"},
+    {title:"Prompt 工程师认证",by:"AI 大学堂"},
+    {title:"AI4S Cup Python 基础能力认证",by:"AI4S Cup"},
+    {title:"Apsara Clouder 专项技能认证",by:"阿里云"},
+    {title:"人工智能初识微认证",by:"华为"}
+  ],
+  // 个人特质
+  traits:"热爱机器人原理与结构研究，具备较强的动手能力与工程思维，擅长从零搭建硬件项目；持续关注 AI 技术与开源社区动态，始终保持对前沿技术的学习热情与快速落地能力。",
+  hobbies:["羽毛球","飞牌","书法","机器人原理","PC 硬件 DIY","开源社区"],
+  // 特别鸣谢
+  thanks:"衷心感谢浪尖社区提供的优质平台与学习资源，感谢社区导师与同学们的悉心指导；特别致谢浩源、西风、一博、阿文四位学长在技术成长与职业规划方面的高人指路，为个人发展提供了宝贵的视野与方向。",
+  thanksPeople:["浪尖社区","浩源","西风","一博","阿文"]
+};
+
+/* ============================================================
+   SVG 图标库（内联，无外链）
+   ============================================================ */
+const I = {
+  print:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>',
+  burger:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>',
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.81.36 1.6.7 2.34a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.74-1.74a2 2 0 0 1 2.11-.45c.74.34 1.53.57 2.34.7A2 2 0 0 1 22 16.92z"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>',
+  wechat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2C4.6 2 1 5 1 8.8c0 2.1 1.2 4 3 5.2L3 17l3.2-1.7c.9.2 1.8.3 2.8.3.3 0 .6 0 .9-.1"/><path d="M15 9c-3.9 0-7 2.7-7 6s3.1 6 7 6c.8 0 1.5-.1 2.2-.3L20 22l-.6-2.2c1.6-1.1 2.6-2.8 2.6-4.8 0-3.3-3.1-6-7-6z"/><circle cx="6.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="11.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="12.5" cy="14.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="14.5" r=".5" fill="currentColor"/></svg>',
+  ai:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg>',
+  code:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  tool:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  chip:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>',
+  award:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5"/></svg>',
+  cap:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5"/></svg>',
+  rocket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a13.79 13.79 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>'
+};
+const icon = n => I[n]||'';
+
+/* ============================================================
+   DOM 工具
+   ============================================================ */
+const $ = (s,p=document) => p.querySelector(s);
+const $$ = (s,p=document) => [...p.querySelectorAll(s)];
+const el = (t,c,h) => {const e=document.createElement(t); if(c)e.className=c; if(h!=null)e.innerHTML=h; return e;};
+
+/* ============================================================
+   渲染：导航图标
+   ============================================================ */
+function paintNavIcons(){
+  $('#printBtn').innerHTML = icon('print');
+  $('#burger').innerHTML = icon('burger');
+  $('#toTop').innerHTML = icon('up');
+}
+
+/* ============================================================
+   渲染：Hero（居中姓名 + 八字行书水印）
+   ============================================================ */
+function renderHero(){
+  const r = resume;
+  return `
+  <header class="hero" id="hero">
+    <div class="hero-stage">
+      <div class="name-plate">
+        <h1 class="hero-name depth-text" id="heroName"
+            data-text="${r.name}" data-layers="34" data-depth="2.4"
+            data-face-color="#f8fafc" data-depth-color="#0a0a0e"
+            data-tilt="7.5">${r.name}</h1>
+      </div>
+      <div class="hero-eyebrow">${r.pinyin}</div>
+      <p class="hero-title-line">${r.title}</p>
+      <p class="hero-loc"><span class="dot"></span>${r.location}</p>
+    </div>
+  </header>`;
+}
+
+/* ============================================================
+   通用板块头（仅保留英文标题）
+   ============================================================ */
+function sectionHead(en){
+  return `<div class="section-head reveal">
+    <div class="en">${en}</div>
+    <div class="rule"></div>
+  </div>`;
+}
+
+/* ============================================================
+   渲染：Profile 基本信息
+   ============================================================ */
+function renderProfile(){
+  const r = resume;
+  const cards = r.profile.map(p=>{
+    let v = p.v, copyAttr='';
+    if(p.v==='mail'){
+      v = `${r.emailUser}@${r.emailDomain}`;
+    }
+    if(p.copy) copyAttr = `data-copy="${v==='mail'?'MAIL':v}"`;
+    return `
+    <div class="info-card reveal">
+      <span class="ic">${icon(p.icon)}</span>
+      <div class="il">
+        <div class="k">${p.k}</div>
+        <div class="v" ${p.v==='mail'?'data-mail="'+r.emailUser+'@'+r.emailDomain+'"':''}>${p.v==='mail'?'':v}</div>
+      </div>
+      ${p.copy?`<button class="copy" ${copyAttr.includes('MAIL')?'data-copy-mail':''} ${copyAttr}>复制</button>`:''}
+    </div>`;
+  }).join('');
+  return `
+  <section class="block" id="profile">
+    <div class="container">
+      ${sectionHead('Profile')}
+      <div class="profile-grid chroma">${cards}</div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：Education 教育背景
+   ============================================================ */
+function renderEducation(){
+  const e = resume.education;
+  return `
+  <section class="block" id="education">
+    <div class="container">
+      ${sectionHead('Education','教 育 背 景')}
+      <div class="edu-card reveal chroma">
+        <div class="edu-head">
+          <span class="badge">${icon('cap')}</span>
+          <div>
+            <div class="edu-school">${e.school}</div>
+            <div class="edu-meta">${e.major} · ${e.degree}</div>
+          </div>
+          <span class="edu-period">${e.period}</span>
+        </div>
+        <div class="edu-courses">${e.courses.map(c=>`<span class="c">${c}</span>`).join('')}</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：Skills 专业技能（全展开）
+   ============================================================ */
+function renderSkills(){
+  const card = s => {
+    let body;
+    if(s.bars){
+      body = s.bars.map(b=>`<div class="bar"><div class="top"><span>${b.name}</span><span class="pct">${b.level}%</span></div><div class="track"><div class="fill" data-level="${b.level}"></div></div></div>`).join('');
+    } else {
+      body = `<div class="skill-badges">${s.badges.map(b=>`<span class="tag"><span class="dot"></span>${b}</span>`).join('')}</div>`;
+    }
+    return `<div class="skill-card reveal"><h3><span class="si">${icon(s.icon)}</span>${s.title}</h3>${body}</div>`;
+  };
+  return `
+  <section class="block" id="skills">
+    <div class="container">
+      ${sectionHead('Skills','专 业 技 能')}
+      <div class="skill-grid chroma">${resume.skills.map(card).join('')}</div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：Internship 实习履历（时间线）
+   ============================================================ */
+function renderInternship(){
+  const tl = resume.internships.map(it=>`
+    <div class="tl-item">
+      <div class="tl-head">
+        <div><span class="org">${it.org}</span> <span class="role">· ${it.role}</span></div>
+        <span class="period">${it.period}</span>
+      </div>
+      <ul class="tl-list">${it.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+    </div>`).join('');
+  return `
+  <section class="block" id="internship">
+    <div class="container">
+      ${sectionHead('Internship','实 习 履 历')}
+      <div class="timeline reveal chroma">${tl}</div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：Projects 项目经历（全展开，无 Tab）
+   ============================================================ */
+function renderProjects(){
+  const card = p => `
+    <article class="proj reveal">
+      <div class="proj-top">
+        <div class="proj-name"><span class="pin"></span>${p.name}</div>
+        <span class="proj-period">${p.period}</span>
+      </div>
+      <div class="proj-role">${p.role}</div>
+      <p class="proj-desc">${p.desc}</p>
+      <p class="proj-result"><b>成果：</b>${p.result}</p>
+      <div class="proj-tech">${p.tech.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+    </article>`;
+  return `
+  <section class="block" id="projects">
+    <div class="container">
+      ${sectionHead('Projects','项 目 经 历')}
+      <div class="proj-grid chroma">${resume.projects.map(card).join('')}</div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：Certificates 获奖证书
+   ============================================================ */
+function renderCertificates(){
+  const cards = resume.certificates.map(c=>`
+    <div class="cert reveal">
+      <span class="ci">${icon('award')}</span>
+      <div><div class="ct">${c.title}</div><div class="cb">${c.by}</div></div>
+    </div>`).join('');
+  return `
+  <section class="block" id="certificates">
+    <div class="container">
+      ${sectionHead('Certificates','获 奖 证 书')}
+      <div class="cert-grid chroma">${cards}</div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：Gallery 荣誉画廊（环形 3D 旋转，CSS preserve-3d 移植 CircularGallery）
+   ============================================================ */
+function renderGallery(){
+  const imgs = [
+    '证书/人工智能初识微认证.png',
+    '证书/Spring Al 应用开发(入门).png',
+    '证书/基于通义灵码实现高效AI编码实践.png',
+    '证书/Agent Engineer.png',
+    '证书/Al+数据分析能力认证证书.png',
+    '证书/Fine-tuning Engineer.png',
+    '证书/大模型开发工程师.png',
+    '证书/AI4S Cup-Python 基础能力认证.png',
+    '证书/微调工程师认证.png',
+    '证书/智能体工程师认证.png',
+    '证书/基于PAI ArtLab的AIGC设计基础.png',
+    '证书/RAG应用构建及优化.png',
+    '证书/利用大模型提升内容生产能力.png',
+    '证书/基于百炼平台构建智能体应用.png',
+    '证书/人工智能训练师（高级）.jpg',
+    '证书/人工智能训练师（初级）.jpg'
+  ];
+  const items = imgs.map(src=>{
+    const rawName = src.split('/').pop();
+    const name = rawName.replace(/\.(png|jpg|jpeg|webp)$/i,'');
+    const dir = src.slice(0, src.length - rawName.length);
+    // 目录用 encodeURI（编码中文），文件名用 encodeURIComponent（编码 +、()、空格）
+    const enc = encodeURI(dir) + encodeURIComponent(rawName);
+    return `<div class="gallery-item"><img src="${enc}" alt="${name}" loading="lazy"><div class="cap">${name}</div></div>`;
+  }).join('');
+  return `
+  <section class="block" id="gallery">
+    <div class="container">
+      ${sectionHead('Gallery','荣 誉 画 廊')}
+      <div class="gallery-stage" id="galleryStage"><div class="gallery-ring" id="galleryRing">${items}</div></div>
+      <p class="gallery-hint">拖动旋转 · 自动巡航</p>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：Traits 个人特质
+   ============================================================ */
+function renderTraits(){
+  const hobbies = resume.hobbies.map(h=>`<span class="hobby">${icon('rocket')}${h}</span>`).join('');
+  return `
+  <section class="block" id="traits">
+    <div class="container">
+      ${sectionHead('Traits','个 人 特 质')}
+      <div class="note reveal chroma">
+        <span class="quote">志</span>
+        <p>${resume.traits}</p>
+        <div class="hobby-row">${hobbies}</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：Acknowledgements 特别鸣谢
+   ============================================================ */
+function renderThanks(){
+  const people = resume.thanksPeople.map(t=>`<span class="t">${t}</span>`).join('');
+  return `
+  <section class="block" id="thanks">
+    <div class="container">
+      ${sectionHead('Acknowledgements','特 别 鸣 谢')}
+      <div class="note reveal chroma">
+        <span class="quote">谢</span>
+        <p>${resume.thanks}</p>
+        <div class="thanks-list">${people}</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+/* ============================================================
+   渲染：页脚
+   ============================================================ */
+function renderFooter(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `
+  <footer class="footer">
+    <div class="container">
+      <p>© ${y} <b>蓝志华</b> · 保留所有权利</p>
+    </div>
+  </footer>`;
+}
+
+/* ============================================================
+   DepthText 立体姓名（移植自 React DepthText，无外部依赖）
+   - 多层 translateZ 堆叠 + faceColor→depthColor 颜色混合
+   - 鼠标跟踪 + 自动公转 + 平滑插值（lerp）
+   - prefers-reduced-motion 时静止，粗指针设备不跟踪
+   ============================================================ */
+function clampDepth(v,min,max){return Math.min(Math.max(v,min),max);}
+function initDepthText(root){
+  const text = root.dataset.text || root.textContent || '';
+  const layers = clampDepth(parseInt(root.dataset.layers)||34, 2, 64);
+  const depth = clampDepth(parseFloat(root.dataset.depth)||2.4, 0, 12);
+  const faceColor = root.dataset.faceColor || '#f8fafc';
+  const depthColor = root.dataset.depthColor || '#0a0a0e';
+  const tilt = clampDepth(parseFloat(root.dataset.tilt)||7.5, 0, 12);
+  const smoothing = 0.14;
+  const perspective = 900;
+  const autoOrbit = true;
+  const orbitSpeed = 0.35;
+
+  root.style.setProperty('--depth-text-perspective', perspective+'px');
+  root.style.setProperty('--depth-text-face-color', faceColor);
+  root.style.setProperty('--depth-text-depth-color', depthColor);
+
+  // 构建 stage：从深到浅逐层堆叠，最后追加 face（最上层）
+  const stage = document.createElement('span');
+  stage.className = 'depth-text__stage';
+  for(let i=0;i<layers;i++){
+    const index = layers - i; // 深层在前
+    const progress = layers<=1 ? 1 : index/layers;
+    const eased = progress*progress;
+    const faceMix = Math.round((1-eased)*72+4);
+    const color = `color-mix(in srgb, ${faceColor} ${faceMix}%, ${depthColor})`;
+    const layer = document.createElement('span');
+    layer.className = 'depth-text__layer';
+    layer.setAttribute('aria-hidden','true');
+    layer.textContent = text;
+    layer.style.color = color;
+    layer.style.transform = `translateZ(${-index*depth}px)`;
+    stage.appendChild(layer);
+  }
+  const face = document.createElement('span');
+  face.className = 'depth-text__face';
+  face.textContent = text;
+  face.setAttribute('data-text', text); // 供 ::after 扫光伪元素 content:attr(data-text) 使用
+  stage.appendChild(face);
+
+  root.textContent = '';
+  root.appendChild(stage);
+
+  const baseRotation = {x:-tilt*0.32, y:tilt*0.42};
+  const current = {x:baseRotation.x, y:baseRotation.y};
+  const target = {x:baseRotation.x, y:baseRotation.y};
+  let activePointer = false;
+  const startTime = performance.now();
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const canTrackPointer = finePointer && !reducedMotion;
+
+  function applyTransform(){
+    stage.style.transform = `rotateX(${current.x.toFixed(3)}deg) rotateY(${current.y.toFixed(3)}deg)`;
+  }
+  if(reducedMotion){ applyTransform(); return; }
+
+  function onMove(e){
+    const rect = root.getBoundingClientRect();
+    if(!rect.width||!rect.height) return;
+    activePointer = true;
+    const x = clampDepth((e.clientX-(rect.left+rect.width/2))/(rect.width*0.8), -1, 1);
+    const y = clampDepth((e.clientY-(rect.top+rect.height/2))/(rect.height*0.8), -1, 1);
+    target.x = baseRotation.x - y*tilt;
+    target.y = baseRotation.y + x*tilt;
+  }
+  function onLeave(){ activePointer=false; target.x=baseRotation.x; target.y=baseRotation.y; }
+  if(canTrackPointer){
+    window.addEventListener('pointermove', onMove, {passive:true});
+    window.addEventListener('pointerleave', onLeave);
+    window.addEventListener('blur', onLeave);
+  }
+
+  function tick(now){
+    if((!canTrackPointer || !activePointer) && autoOrbit){
+      const elapsed = (now-startTime)/1000;
+      const orbit = elapsed*orbitSpeed*Math.PI*2;
+      const fb = canTrackPointer ? 0.18 : 0.55;
+      target.x = baseRotation.x + Math.sin(orbit)*tilt*fb;
+      target.y = baseRotation.y + Math.cos(orbit*0.85)*tilt*fb;
+    }
+    current.x += (target.x-current.x)*smoothing;
+    current.y += (target.y-current.y)*smoothing;
+    applyTransform();
+    requestAnimationFrame(tick);
+  }
+  applyTransform();
+  requestAnimationFrame(tick);
+}
+function initDepthTexts(){
+  document.querySelectorAll('.depth-text').forEach(initDepthText);
+}
+
+/* ============================================================
+   主渲染
+   ============================================================ */
+function render(){
+  $('#app').innerHTML =
+    renderHero() +
+    renderProfile() +
+    renderEducation() +
+    renderSkills() +
+    renderInternship() +
+    renderProjects() +
+    renderCertificates() +
+    renderGallery() +
+    renderTraits() +
+    renderThanks() +
+    renderFooter();
+  paintNavIcons();
+  // 立体姓名
+  initDepthTexts();
+  // 邮箱反爬填充
+  $$('[data-mail]').forEach(n=>{ n.textContent = n.dataset.mail; });
+  bindReveal();
+  bindSplitText();
+  bindSkillBars();
+  bindActions();
+  bindBgm();
+  bindChroma();
+  bindGallery();
+  onScroll(); // 初始化首屏视差与色相
+}
+
+/* ============================================================
+   进入动画（IntersectionObserver）
+   ============================================================ */
+let io;
+function bindReveal(){
+  if(io) io.disconnect();
+  io = new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  $$('.reveal').forEach(e=>io.observe(e));
+}
+
+/* ============================================================
+   SplitText 逐字滚动进入（原生 JS 移植，无 GSAP/外链）
+   - 递归拆文本节点为 .rb-char span（保留嵌套与空白）
+   - IntersectionObserver 触发，chars 按 --rb-i 索引 stagger 50ms
+   - 排除 .depth-text（立体姓名已有动画）、script/style/canvas/button 等
+   ============================================================ */
+function splitTextChars(el){
+  const chars=[];
+  const SKIP=new Set(['SCRIPT','STYLE','CANVAS','BR','TEXTAREA','INPUT','SVG','IMG','BUTTON','SUP','SUB','IFRAME','OBJECT']);
+  function walk(node){
+    if(!node) return;
+    if(node.nodeType===Node.TEXT_NODE){
+      const text=node.nodeValue;
+      if(!text || !text.trim()) return;
+      const frag=document.createDocumentFragment();
+      for(const ch of text){
+        if(/\s/.test(ch)){ frag.appendChild(document.createTextNode(ch)); continue; }
+        const span=document.createElement('span');
+        span.className='rb-char';
+        span.textContent=ch;
+        span.style.setProperty('--rb-i',chars.length);
+        frag.appendChild(span);
+        chars.push(span);
+      }
+      node.parentNode.replaceChild(frag,node);
+    } else if(node.nodeType===Node.ELEMENT_NODE){
+      if(SKIP.has(node.tagName)) return;
+      if(node.classList && (node.classList.contains('depth-text')||node.classList.contains('rb-pre'))) return;
+      Array.from(node.childNodes).forEach(walk);
+    }
+  }
+  walk(el);
+  return chars;
+}
+let splitIO=null;
+function bindSplitText(){
+  if(splitIO){ splitIO.disconnect(); splitIO=null; }
+  // 细粒度文字容器：每个独立拆字与触发，避免整页 stagger 过长
+  const SEL='.hero-eyebrow,.hero-title-line,.hero-loc,.section-head .en,.info-card .il,.edu-card,.skill-card,.tl-item,.proj,.cert,.note,.footer p';
+  const targets=[];
+  document.querySelectorAll(SEL).forEach(el=>{
+    if(el.closest('.depth-text')) return;       // 排除立体姓名
+    if(el.classList.contains('rb-pre')) return;  // 避免重复拆字
+    el.classList.add('rb-pre');
+    splitTextChars(el);
+    targets.push(el);
+  });
+  if(!targets.length) return;
+  splitIO=new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('rb-in');
+        splitIO.unobserve(e.target);
+      }
+    });
+  },{threshold:.1,rootMargin:'0px 0px 0px 0px'});
+  targets.forEach(t=>splitIO.observe(t));
+}
+
+/* ============================================================
+   背景音乐播放器（点击页面任意处播放）
+   - 鼠标点击页面任意位置（非 ♪ 按钮）→ 播放音乐
+   - 点击 ♪ 按钮 → toggle 播放/暂停
+   - localStorage 记忆播放状态
+   - 文件缺失加 .err 状态，按钮置灰
+   ============================================================ */
+function bindBgm(){
+  const audio = $('#bgm');
+  const btn = $('#bgmToggle');
+  if(!audio || !btn) return;
+  const KEY = 'bgm-on';
+  let blobUrl = null;       // 已加载的 blob URL（避免重复下载）
+  let loading = false;      // 正在 fetch 加载
+  const setOn = v => { try { localStorage.setItem(KEY, v ? '1' : '0'); } catch(_) {} };
+  // 一次性 fetch 整个音频为 blob URL，绕过 audio Range 流式请求被预览器中止的问题
+  function ensureBlob(){
+    if(blobUrl) return Promise.resolve(blobUrl);
+    if(loading) return loading;   // 复用进行中的 promise
+    loading = true;
+    btn.classList.add('loading');
+    const p = fetch('bgm.mp3', {cache:'force-cache'}).then(r=>{
+      if(!r.ok) throw new Error('bgm '+r.status);
+      return r.blob();
+    }).then(blob=>{
+      blobUrl = URL.createObjectURL(blob);
+      audio.src = blobUrl;
+      loading = false;
+      btn.classList.remove('loading');
+      return blobUrl;
+    }).catch(e=>{
+      loading = false;
+      btn.classList.remove('loading');
+      throw e;
+    });
+    loading = p;   // 后续复用同一 promise
+    return p;
+  }
+  function play(){
+    // blob 就绪 → audio.src 已是 blobUrl（ensureBlob 中设置）；未就绪 → 直接用 mp3 让 audio 元素加载
+    // 两种情况 play() 均在 gesture handler 内同步调用，符合浏览器自动播放策略
+    if(!blobUrl) audio.src = 'bgm.mp3';
+    const pr = audio.play();
+    if(pr && pr.then) pr.then(()=>{
+      btn.classList.add('on');
+      btn.setAttribute('aria-label','暂停背景音乐');
+      setOn(true);
+    }).catch(()=>{ btn.classList.remove('on'); });
+  }
+  function pause(){ audio.pause(); btn.classList.remove('on'); btn.setAttribute('aria-label','播放背景音乐'); setOn(false); }
+  // 点击 ♪ 按钮 toggle
+  btn.addEventListener('click',()=>{
+    if(btn.classList.contains('err')) return;
+    if(audio.paused){ play(); } else { pause(); }
+  });
+  // 鼠标点击页面任意处（非按钮）→ 播放音乐
+  document.addEventListener('pointerdown',(e)=>{
+    if(btn.contains(e.target)) return;
+    if(btn.classList.contains('err')) return;
+    if(audio.paused){ play(); }
+  },{passive:true});
+  audio.addEventListener('error',()=>{ btn.classList.add('err'); btn.setAttribute('title','未找到 bgm.mp3'); });
+  audio.addEventListener('play',()=>{ btn.classList.add('on'); btn.setAttribute('aria-label','暂停背景音乐'); });
+  audio.addEventListener('pause',()=>{ btn.classList.remove('on'); btn.setAttribute('aria-label','播放背景音乐'); });
+  // 预加载 bgm blob（页面加载即 fetch，点击时 blob 已就绪 → 同步 play 符合浏览器手势策略）
+  ensureBlob().catch(()=>{});
+}
+
+/* ============================================================
+   ChromaGrid 色度网格（容器光斑 + 卡片聚光灯）
+   - .chroma 容器 pointermove 更新 --x/--y（紫色径向光斑跟随鼠标）
+   - 卡片 mousemove 更新 --mx/--my（卡片内聚光灯高光）
+   - pointerleave 时光斑渐隐
+   - 动态注入 .chroma-glow / .chroma-spot 子元素，不占用伪元素
+   ============================================================ */
+function bindChroma(){
+  const CARD_SEL = '.info-card,.skill-card,.proj,.cert,.tl-item,.edu-card,.note';
+  // 容器光斑
+  document.querySelectorAll('.chroma').forEach(grid=>{
+    const glow = document.createElement('div');
+    glow.className = 'chroma-glow';
+    grid.insertBefore(glow, grid.firstChild);
+    const rect = ()=>grid.getBoundingClientRect();
+    const r0 = rect();
+    grid.style.setProperty('--x', (r0.width/2)+'px');
+    grid.style.setProperty('--y', (r0.height/2)+'px');
+    grid.addEventListener('pointermove',e=>{
+      const r = rect();
+      grid.style.setProperty('--x',(e.clientX-r.left)+'px');
+      grid.style.setProperty('--y',(e.clientY-r.top)+'px');
+      grid.classList.add('chroma-on');
+    });
+    grid.addEventListener('pointerleave',()=>{
+      grid.classList.remove('chroma-on');
+    });
+  });
+  // 卡片聚光灯
+  document.querySelectorAll(CARD_SEL).forEach(card=>{
+    const spot = document.createElement('div');
+    spot.className = 'chroma-spot';
+    card.insertBefore(spot, card.firstChild);
+    card.addEventListener('mousemove',e=>{
+      const cr = card.getBoundingClientRect();
+      card.style.setProperty('--mx',(e.clientX-cr.left)+'px');
+      card.style.setProperty('--my',(e.clientY-cr.top)+'px');
+    });
+  });
+}
+
+/* ============================================================
+   CircularGallery 环形画廊（CSS preserve-3d 移植）
+   - 图片沿圆环排列（rotateY + translateZ）
+   - 自动巡航 + 鼠标拖动旋转 + lerp 平滑 + 惯性减速
+   ============================================================ */
+function bindGallery(){
+  const ring = $('#galleryRing');
+  const stage = $('#galleryStage');
+  if(!ring || !stage) return;
+  const items = [...ring.querySelectorAll('.gallery-item')];
+  const n = items.length;
+  if(!n) return;
+  const step = 360 / n;
+  // 根据数量计算环半径，保证卡片不重叠
+  const cardW = ring.offsetWidth || 200;
+  const radius = Math.round((cardW/2) / Math.tan(Math.PI/n));
+  items.forEach((it,i)=>{
+    it.style.transform = `rotateY(${i*step}deg) translateZ(${radius}px)`;
+  });
+  // 旋转控制：target 目标角，current 当前角（lerp 平滑），vel 惯性
+  let target = 0, current = 0, vel = 0;
+  let dragging = false, lastX = 0;
+  const autoSpeed = 0.15;
+  function tick(){
+    if(!dragging){
+      target += autoSpeed + vel;
+      vel *= 0.94;
+    }
+    current += (target - current) * 0.12;
+    ring.style.transform = `rotateY(${current}deg)`;
+    requestAnimationFrame(tick);
+  }
+  tick();
+  stage.addEventListener('pointerdown',e=>{
+    dragging = true; lastX = e.clientX;
+    try{ stage.setPointerCapture(e.pointerId); }catch(_){}
+  });
+  stage.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    const dx = e.clientX - lastX; lastX = e.clientX;
+    target += dx * 0.4;
+    vel = dx * 0.05;
+  });
+  const end = ()=>{ dragging = false; };
+  stage.addEventListener('pointerup',end);
+  stage.addEventListener('pointerleave',end);
+  stage.addEventListener('pointercancel',end);
+}
+
+/* ============================================================
+   技能进度条动画
+   ============================================================ */
+function bindSkillBars(){
+  const obs = new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{
+      if(!e.isIntersecting) return;
+      $$('.fill',e.target).forEach(b=>b.style.width = b.dataset.level + '%');
+      obs.unobserve(e.target);
+    });
+  },{threshold:.3});
+  $$('.skill-card').forEach(c=>obs.observe(c));
+}
+
+/* ============================================================
+   交互：Toast / 复制 / 菜单 / 打印
+   ============================================================ */
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>t.classList.remove('show'),1800);
+}
+function copyText(text){
+  if(navigator.clipboard?.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast('已复制：'+text)).catch(()=>fallbackCopy(text));
+  } else fallbackCopy(text);
+}
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{document.execCommand('copy'); toast('已复制：'+text)}catch(_){toast('复制失败')}
+  document.body.removeChild(ta);
+}
+function bindActions(){
+  $('#printBtn').addEventListener('click',()=>window.print());
+  const burger = $('#burger'), menu = $('#navMenu');
+  burger.addEventListener('click',()=>{
+    const open = menu.classList.toggle('open');
+    burger.setAttribute('aria-expanded',open);
+  });
+  $$('.nav-link').forEach(l=>l.addEventListener('click',()=>{menu.classList.remove('open');burger.setAttribute('aria-expanded','false')}));
+  // 复制按钮
+  $$('[data-copy]').forEach(b=>b.addEventListener('click',()=>copyText(b.dataset.copy)));
+  $$('[data-copy-mail]').forEach(b=>b.addEventListener('click',()=>{
+    const node = b.closest('.info-card').querySelector('[data-mail]');
+    copyText(node.dataset.mail);
+  }));
+}
+
+/* ============================================================
+   点击涟漪效果（委托到 button/a/clickable）
+   ============================================================ */
+function bindRipple(){
+  document.addEventListener('click',e=>{
+    const t = e.target.closest('button, a, .info-card, .proj, .cert, .skill-card, .tag, .hobby');
+    if(!t) return;
+    const r = t.getBoundingClientRect();
+    const d = Math.max(r.width, r.height);
+    const s = document.createElement('span');
+    s.className = 'ripple-wave';
+    s.style.left = (e.clientX - r.left - d/2) + 'px';
+    s.style.top  = (e.clientY - r.top  - d/2) + 'px';
+    s.style.width = s.style.height = d + 'px';
+    // 确保容器可承载涟漪
+    const cs = getComputedStyle(t);
+    if(cs.position==='static') t.style.position = 'relative';
+    t.style.overflow = 'hidden';
+    t.appendChild(s);
+    setTimeout(()=>s.remove(),600);
+  });
+}
+
+/* ============================================================
+   滚动：视差横向平移 + 色相渐变 + 导航/返回顶部
+   ============================================================ */
+function onScroll(){
+  const y = window.scrollY;
+  const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  const p = Math.min(1, Math.max(0, y / max));   // 滚动进度 0~1
+
+  // 1) 色相随滚动渐变：金棕 → 玫红 → 紫 → 青 → 金棕（环回）
+  const hue = (40 + p * 320) % 360;
+  const accent = `hsl(${hue.toFixed(0)} 72% 62%)`;
+  const accent2 = `hsl(${((hue+38)%360).toFixed(0)} 68% 50%)`;
+  const root = document.documentElement.style;
+  root.setProperty('--accent', accent);
+  root.setProperty('--accent-2', accent2);
+  // 同步 rgb（用于半透明叠加）
+  const rgb = hslToRgb(hue, .72, .62);
+  root.setProperty('--accent-rgb', `${rgb[0]},${rgb[1]},${rgb[2]}`);
+
+  // 2) 视差由星河着色器内部自动旋转 + 鼠手排斥提供，无需 DOM 平移
+
+  // 4) 导航阴影 / 返回顶部
+  $('#nav').classList.toggle('scrolled', y > 10);
+  $('#toTop').classList.toggle('show', y > 500);
+}
+
+/* HSL 转 RGB（用于 --accent-rgb） */
+function hslToRgb(h, s, l){
+  h /= 360; s = Math.max(0,Math.min(1,s)); l = Math.max(0,Math.min(1,l));
+  let r,g,b;
+  if(s === 0){ r = g = b = l; }
+  else{
+    const hue2rgb = (p,q,t)=>{
+      if(t<0) t+=1; if(t>1) t-=1;
+      if(t<1/6) return p+(q-p)*6*t;
+      if(t<1/2) return q;
+      if(t<2/3) return p+(q-p)*(2/3-t)*6;
+      return p;
+    };
+    const q = l<.5 ? l*(1+s) : l+s-l*s;
+    const pv = 2*l - q;
+    r = hue2rgb(pv,q,h+1/3);
+    g = hue2rgb(pv,q,h);
+    b = hue2rgb(pv,q,h-1/3);
+  }
+  return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
+}
+
+/* ============================================================
+   启动
+   ============================================================ */
+render();
+bindRipple();
+window.addEventListener('scroll', onScroll, {passive:true});
+</script>
+
+<script>
+/* ============================================================
+   星河背景：WebGL 着色器（移植自 OGL Galaxy，无外部依赖）
+   - 全屏三角形 + 4 层星点 + 鼠手排斥 + 自动旋转 + 闪烁
+   - Canvas 固定于 z-index:-3，作为整页背景
+   ============================================================ */
+(function(){
+  const canvas = document.getElementById('galaxy');
+  if(!canvas) return;
+  const gl = canvas.getContext('webgl', {alpha:true, antialias:false, premultipliedAlpha:false});
+  if(!gl){ canvas.style.display='none'; return; }
+
+  /* —— 顶点着色器：全屏三角形，透传 position / uv —— */
+  const vsSrc = `attribute vec2 uv; attribute vec2 position; varying vec2 vUv;
+  void main(){ vUv = uv; gl_Position = vec4(position, 0.0, 1.0); }`;
+
+  /* —— 片段着色器：多层星河（原样移植） —— */
+  const fsSrc = `precision highp float;
+uniform float uTime;
+uniform vec3 uResolution;
+uniform vec2 uFocal;
+uniform vec2 uRotation;
+uniform float uStarSpeed;
+uniform float uDensity;
+uniform float uHueShift;
+uniform float uSpeed;
+uniform vec2 uMouse;
+uniform float uGlowIntensity;
+uniform float uSaturation;
+uniform bool uMouseRepulsion;
+uniform float uTwinkleIntensity;
+uniform float uRotationSpeed;
+uniform float uRepulsionStrength;
+uniform float uMouseActiveFactor;
+uniform float uAutoCenterRepulsion;
+uniform bool uTransparent;
+varying vec2 vUv;
+#define NUM_LAYER 4.0
+#define STAR_COLOR_CUTOFF 0.2
+#define MAT45 mat2(0.7071, -0.7071, 0.7071, 0.7071)
+#define PERIOD 3.0
+float Hash21(vec2 p){
+  p = fract(p * vec2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+float tri(float x){ return abs(fract(x) * 2.0 - 1.0); }
+float tris(float x){ float t = fract(x); return 1.0 - smoothstep(0.0, 1.0, abs(2.0 * t - 1.0)); }
+float trisn(float x){ float t = fract(x); return 2.0 * (1.0 - smoothstep(0.0, 1.0, abs(2.0 * t - 1.0))) - 1.0; }
+vec3 hsv2rgb(vec3 c){
+  vec4 K = vec4(1.0, 2.0/3.0, 1.0/3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+float Star(vec2 uv, float flare){
+  float d = length(uv);
+  float m = (0.05 * uGlowIntensity) / d;
+  float rays = smoothstep(0.0, 1.0, 1.0 - abs(uv.x * uv.y * 1000.0));
+  m += rays * flare * uGlowIntensity;
+  uv *= MAT45;
+  rays = smoothstep(0.0, 1.0, 1.0 - abs(uv.x * uv.y * 1000.0));
+  m += rays * 0.3 * flare * uGlowIntensity;
+  m *= smoothstep(1.0, 0.2, d);
+  return m;
+}
+vec3 StarLayer(vec2 uv){
+  vec3 col = vec3(0.0);
+  vec2 gv = fract(uv) - 0.5;
+  vec2 id = floor(uv);
+  for(int y = -1; y <= 1; y++){
+    for(int x = -1; x <= 1; x++){
+      vec2 offset = vec2(float(x), float(y));
+      vec2 si = id + vec2(float(x), float(y));
+      float seed = Hash21(si);
+      float size = fract(seed * 345.32);
+      float glossLocal = tri(uStarSpeed / (PERIOD * seed + 1.0));
+      float flareSize = smoothstep(0.9, 1.0, size) * glossLocal;
+      float red = smoothstep(STAR_COLOR_CUTOFF, 1.0, Hash21(si + 1.0)) + STAR_COLOR_CUTOFF;
+      float blu = smoothstep(STAR_COLOR_CUTOFF, 1.0, Hash21(si + 3.0)) + STAR_COLOR_CUTOFF;
+      float grn = min(red, blu) * seed;
+      vec3 base = vec3(red, grn, blu);
+      float hue = atan(base.g - base.r, base.b - base.r) / (2.0 * 3.14159) + 0.5;
+      hue = fract(hue + uHueShift / 360.0);
+      float sat = length(base - vec3(dot(base, vec3(0.299, 0.587, 0.114)))) * uSaturation;
+      float val = max(max(base.r, base.g), base.b);
+      base = hsv2rgb(vec3(hue, sat, val));
+      vec2 pad = vec2(tris(seed * 34.0 + uTime * uSpeed / 10.0), tris(seed * 38.0 + uTime * uSpeed / 30.0)) - 0.5;
+      float star = Star(gv - offset - pad, flareSize);
+      vec3 color = base;
+      float twinkle = trisn(uTime * uSpeed + seed * 6.2831) * 0.5 + 1.0;
+      twinkle = mix(1.0, twinkle, uTwinkleIntensity);
+      star *= twinkle;
+      col += star * size * color;
+    }
+  }
+  return col;
+}
+void main(){
+  vec2 focalPx = uFocal * uResolution.xy;
+  vec2 uv = (vUv * uResolution.xy - focalPx) / uResolution.y;
+  vec2 mouseNorm = uMouse - vec2(0.5);
+  if(uAutoCenterRepulsion > 0.0){
+    vec2 centerUV = vec2(0.0, 0.0);
+    float centerDist = length(uv - centerUV);
+    vec2 repulsion = normalize(uv - centerUV) * (uAutoCenterRepulsion / (centerDist + 0.1));
+    uv += repulsion * 0.05;
+  } else if(uMouseRepulsion){
+    vec2 mousePosUV = (uMouse * uResolution.xy - focalPx) / uResolution.y;
+    float mouseDist = length(uv - mousePosUV);
+    vec2 repulsion = normalize(uv - mousePosUV) * (uRepulsionStrength / (mouseDist + 0.1));
+    uv += repulsion * 0.05 * uMouseActiveFactor;
+  } else {
+    vec2 mouseOffset = mouseNorm * 0.1 * uMouseActiveFactor;
+    uv += mouseOffset;
+  }
+  float autoRotAngle = uTime * uRotationSpeed;
+  mat2 autoRot = mat2(cos(autoRotAngle), -sin(autoRotAngle), sin(autoRotAngle), cos(autoRotAngle));
+  uv = autoRot * uv;
+  uv = mat2(uRotation.x, -uRotation.y, uRotation.y, uRotation.x) * uv;
+  vec3 col = vec3(0.0);
+  for(float i = 0.0; i < 1.0; i += 1.0 / NUM_LAYER){
+    float depth = fract(i + uStarSpeed * uSpeed);
+    float scale = mix(20.0 * uDensity, 0.5 * uDensity, depth);
+    float fade = depth * smoothstep(1.0, 0.9, depth);
+    col += StarLayer(uv * scale + i * 453.32) * fade;
+  }
+  if(uTransparent){
+    float alpha = length(col);
+    alpha = smoothstep(0.0, 0.3, alpha);
+    alpha = min(alpha, 1.0);
+    gl_FragColor = vec4(col, alpha);
+  } else {
+    gl_FragColor = vec4(col, 1.0);
+  }
+}`;
+
+  /* —— 编译 / 链接 —— */
+  function compile(type, src){
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){ console.error('shader err:', gl.getShaderInfoLog(s)); return null; }
+    return s;
+  }
+  const vs = compile(gl.VERTEX_SHADER, vsSrc);
+  const fs = compile(gl.FRAGMENT_SHADER, fsSrc);
+  if(!vs || !fs){ canvas.style.display='none'; return; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){ console.error('link err:', gl.getProgramInfoLog(prog)); canvas.style.display='none'; return; }
+  gl.useProgram(prog);
+
+  /* —— 全屏三角形几何 —— */
+  function bindAttr(name, data, size){
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, name);
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
+  }
+  bindAttr('position', new Float32Array([-1,-1, 3,-1, -1,3]), 2);
+  bindAttr('uv',      new Float32Array([0,0, 2,0, 0,2]), 2);
+
+  /* —— Uniform 位置 —— */
+  const U = {};
+  ['uTime','uResolution','uFocal','uRotation','uStarSpeed','uDensity','uHueShift','uSpeed','uMouse',
+   'uGlowIntensity','uSaturation','uMouseRepulsion','uTwinkleIntensity','uRotationSpeed','uRepulsionStrength',
+   'uMouseActiveFactor','uAutoCenterRepulsion','uTransparent'].forEach(n=> U[n] = gl.getUniformLocation(prog, n));
+
+  /* —— 参数（对应 Galaxy 组件默认值） —— */
+  const P = {
+    focal:[0.5,0.5], rotation:[1.0,0.0], starSpeed:0.5, density:1, hueShift:140,
+    speed:1.0, glowIntensity:0.35, saturation:0.0, mouseRepulsion:true,
+    twinkleIntensity:0.3, rotationSpeed:0.1, repulsionStrength:2,
+    autoCenterRepulsion:0, transparent:true
+  };
+
+  /* —— 鼠标 / 触控（平滑跟随） —— */
+  const target = {x:0.5, y:0.5}, smooth = {x:0.5, y:0.5};
+  let targetActive = 0, smoothActive = 0;
+  function setMouse(cx, cy){
+    target.x = cx / window.innerWidth;
+    target.y = 1.0 - cy / window.innerHeight;   // 翻转 y：与 vUv 上正一致
+    targetActive = 1;
+  }
+  window.addEventListener('mousemove', e => setMouse(e.clientX, e.clientY), {passive:true});
+  window.addEventListener('mouseleave', () => { targetActive = 0; });
+  window.addEventListener('touchmove', e => { if(e.touches[0]) setMouse(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+  window.addEventListener('touchend', () => { targetActive = 0; });
+
+  /* —— 尺寸 —— */
+  function resize(){
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width  = Math.floor(window.innerWidth  * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width  = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
+
+  /* —— 渲染循环 —— */
+  const t0 = performance.now();
+  function frame(){
+    const t = (performance.now() - t0) / 1000;
+    // 平滑鼠标
+    smooth.x += (target.x - smooth.x) * 0.06;
+    smooth.y += (target.y - smooth.y) * 0.06;
+    smoothActive += (targetActive - smoothActive) * 0.03;
+
+    gl.uniform1f(U.uTime, t);
+    gl.uniform3f(U.uResolution, canvas.width, canvas.height, (window.devicePixelRatio||1));
+    gl.uniform2f(U.uFocal, P.focal[0], P.focal[1]);
+    gl.uniform2f(U.uRotation, P.rotation[0], P.rotation[1]);
+    gl.uniform1f(U.uStarSpeed, P.starSpeed);
+    gl.uniform1f(U.uDensity, P.density);
+    gl.uniform1f(U.uHueShift, P.hueShift);
+    gl.uniform1f(U.uSpeed, P.speed);
+    gl.uniform2f(U.uMouse, smooth.x, smooth.y);
+    gl.uniform1f(U.uGlowIntensity, P.glowIntensity);
+    gl.uniform1f(U.uSaturation, P.saturation);
+    gl.uniform1i(U.uMouseRepulsion, P.mouseRepulsion ? 1 : 0);
+    gl.uniform1f(U.uTwinkleIntensity, P.twinkleIntensity);
+    gl.uniform1f(U.uRotationSpeed, P.rotationSpeed);
+    gl.uniform1f(U.uRepulsionStrength, P.repulsionStrength);
+    gl.uniform1f(U.uMouseActiveFactor, smoothActive);
+    gl.uniform1f(U.uAutoCenterRepulsion, P.autoCenterRepulsion);
+    gl.uniform1i(U.uTransparent, P.transparent ? 1 : 0);
+
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
+ 
